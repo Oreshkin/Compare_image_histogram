@@ -3,7 +3,7 @@ using System.Drawing;
 
 namespace test_image_rec
 {
-    class ImageRec
+    internal class ImageRec
     {
         public ImageRec(Bitmap imageSourseBitmap, List<int> red, List<int> green, List<int> blue)
         {
