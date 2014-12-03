@@ -46,8 +46,8 @@ namespace test_image_rec
             if (openFileImage.ShowDialog() == DialogResult.OK)
             {
                 int[,,] gist = Histogram.GetHistogramm(openFileImage.FileName);
-                //var rezult = Histogram.Compare(gist, _gistograms, _standartName);
-                //MessageBox.Show(rezult);
+                var rezult = Histogram.Compare(gist, _gistograms, _standartName);
+                MessageBox.Show(rezult);
                 GrawHistogram(gist);
             }
         }
