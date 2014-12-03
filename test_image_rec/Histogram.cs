@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Threading; 
 
 namespace test_image_rec
 {
     class Histogram
     {
+        public static Semaphore Mutex = new Semaphore(1, 1);
         private string _name;
         private double _rate;
 
@@ -18,17 +20,18 @@ namespace test_image_rec
         {
             using (var image = new Bitmap(fileName))
             {
-                const int step = 2;
+                var width = image.Width;
+                var height = image.Height;
                 var colorScale = new int[11, 11, 11];
-                for (int x = 0; x < image.Width; x = x + step)
-                    for (int y = 0; y < image.Height; y = y + step)
-                    {
-                        var pixel = image.GetPixel(x, y);
-                        var r = (int) Math.Round(pixel.R / 25.5);
-                        var g = (int) Math.Round(pixel.G / 25.5);
-                        var b = (int) Math.Round(pixel.B / 25.5);
-                        colorScale[r, g, b]++;
-                    }
+                var T = new Thread[3];
+                for (int i = 0; i < 3; i++)
+                {
+                    T[i] = new Thread(() => { GetValue(image, height, width, ref colorScale, i); });
+                    T[i].Start();
+                }
+                for (int i = 0; i < 3; i++)
+                    T[i].Join();
+
                 for (int x = 0; x < 11; x++)
                     for (int y = 0; y < 11; y++)
                         for (int z = 0; z < 11; z++)
@@ -38,6 +41,21 @@ namespace test_image_rec
                         }
                 return colorScale;
             }
+        }
+
+        private static void GetValue(Bitmap image, int height, int width, ref int[,,] colorScale, int step)
+        {
+            for (int x = step; x < width; x = x + step)
+                for (int y = step; y < height; y = y + step)
+                {
+                    Mutex.WaitOne();
+                    var pixel = image.GetPixel(x, y);
+                    Mutex.Release();
+                    var r = (int)Math.Round(pixel.R / 25.5);
+                    var g = (int)Math.Round(pixel.G / 25.5);
+                    var b = (int)Math.Round(pixel.B / 25.5);
+                    Interlocked.Increment(ref colorScale[r, g, b]);
+                }
         }
 
         /// <summary>
