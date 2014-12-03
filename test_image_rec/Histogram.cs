@@ -7,7 +7,7 @@ namespace test_image_rec
 {
     class Histogram
     {
-        public static Semaphore Mutex = new Semaphore(1, 1);
+        private static readonly Semaphore Mutex = new Semaphore(1, 1);
         private string _name;
         private double _rate;
 
