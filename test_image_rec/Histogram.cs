@@ -6,7 +6,7 @@ namespace test_image_rec
 {
     class Histogram
     {
-        private int _name;
+        private string _name;
         private double _rate;
 
         /// <summary>
@@ -18,22 +18,22 @@ namespace test_image_rec
         {
             using (var image = new Bitmap(fileName))
             {
+                const int step = 2;
                 var colorScale = new int[11, 11, 11];
-                for (int x = 0; x < image.Width; x++)
-                    for (int y = 0; y < image.Height; y++)
+                for (int x = 0; x < image.Width; x = x + step)
+                    for (int y = 0; y < image.Height; y = y + step)
                     {
                         var pixel = image.GetPixel(x, y);
-                        var r = Convert.ToInt32(Math.Round(Convert.ToDouble(pixel.R/25.5)));
-                        var g = Convert.ToInt32(Math.Round(Convert.ToDouble(pixel.G/25.5)));
-                        var b = Convert.ToInt32(Math.Round(Convert.ToDouble(pixel.B/25.5)));
+                        var r = (int) Math.Round(pixel.R / 25.5);
+                        var g = (int) Math.Round(pixel.G / 25.5);
+                        var b = (int) Math.Round(pixel.B / 25.5);
                         colorScale[r, g, b]++;
                     }
-
                 for (int x = 0; x < 11; x++)
                     for (int y = 0; y < 11; y++)
                         for (int z = 0; z < 11; z++)
                         {
-                            double tmp = (Convert.ToDouble(colorScale[x, y, z]) / Convert.ToDouble(image.Width * image.Height)) * 10000000.0;
+                            var tmp = (colorScale[x, y, z] / Convert.ToDouble(image.Width * image.Height)) * 10000000.0;
                             colorScale[x, y, z] = Convert.ToInt32(tmp);
                         }
                 return colorScale;
@@ -45,8 +45,9 @@ namespace test_image_rec
         /// </summary>
         /// <param name="gist">Гистограмма выбранного изображения</param>
         /// <param name="gistograms">Гистограммы эталонов</param>
+        /// <param name="standartName">Имя объектов</param>
         /// <returns>Имя</returns>
-        public static int Compare(int[,,] gist, List<List<int[,,]>> gistograms)
+        public static string Compare(int[,,] gist, List<List<int[,,]>> gistograms, List<string> standartName)
         {
             var tmp = new List<Histogram>();
             var result = new List<List<double>>();
@@ -54,8 +55,7 @@ namespace test_image_rec
             for (int index = 0; index < gistograms.Count; index++)
             {
                 result.Add(new List<double>());
-                var gistogram = gistograms[index];
-                foreach (var gistImage in gistogram)
+                foreach (var gistImage in gistograms[index])
                 {
                     double si = 0;
                     for (int x = 0; x < 11; x++)
@@ -69,12 +69,10 @@ namespace test_image_rec
             {
                 var si = result[index];
                 si.Sort();
-                tmp.Add(new Histogram {_name = index, _rate = si[0]});
+                tmp.Add(new Histogram {_name = standartName[index], _rate = si[0]});
             }
             tmp.Sort((a, b) => a._rate.CompareTo(b._rate));
-            if (tmp[0]._rate < delta)
-                return tmp[0]._name;
-            return -1;
+            return tmp[0]._rate < delta ? tmp[0]._name : "NULL";
         }
     }
 }

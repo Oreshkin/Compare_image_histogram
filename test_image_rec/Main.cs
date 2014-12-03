@@ -7,13 +7,21 @@ namespace test_image_rec
 {
     public partial class Main : Form
     {
+        private readonly List<string> _standartName = new List<string>(); 
         private readonly List<List<string>> _standart = new List<List<string>>();
         private readonly List<List<int[,,]>> _gistograms = new List<List<int[,,]>>();
 
         public Main()
         {
             InitializeComponent();
-            SystemHelper.GetCountObjects(ref _standart);
+            SystemHelper.GetCountObjects(ref _standart, ref _standartName);
+            infoLabel.Text = "Колличество объектов: " + _standartName.Count + "\n";
+            for (int index = 0; index < _standartName.Count; index++)
+            {
+                var name = _standartName[index];
+                infoLabel.Text += name + " ";
+                infoLabel.Text += "Эталонов - " + _standart[index].Count + "\n";
+            }
         }
 
         /// <summary>
@@ -38,8 +46,8 @@ namespace test_image_rec
             if (openFileImage.ShowDialog() == DialogResult.OK)
             {
                 int[,,] gist = Histogram.GetHistogramm(openFileImage.FileName);
-                var rezult = Histogram.Compare(gist, _gistograms);
-                MessageBox.Show(Convert.ToString(rezult));
+                //var rezult = Histogram.Compare(gist, _gistograms, _standartName);
+                //MessageBox.Show(rezult);
                 GrawHistogram(gist);
             }
         }
@@ -66,8 +74,8 @@ namespace test_image_rec
                             number++;
                             if (number != 4) continue;
                             var m = tmp/350;
-                            g.FillRectangle(pik, xPanel, 350-m, 1, m);
-                            xPanel += 1;
+                            g.FillRectangle(pik, xPanel, 350-m, 2, m);
+                            xPanel += 2;
                             tmp = 0;
                             number = 0;
                         }
